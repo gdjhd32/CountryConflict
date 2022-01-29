@@ -1,4 +1,4 @@
-package ClassBase;
+package classBase;
 
 /**
  * <p>
