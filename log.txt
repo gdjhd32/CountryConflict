@@ -1,1 +1,0 @@
-Created new log file, because no log file was found.
