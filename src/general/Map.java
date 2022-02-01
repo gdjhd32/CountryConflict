@@ -9,10 +9,10 @@ import java.nio.file.Paths;
 import org.json.JSONObject;
 
 import classBase.List;
+import wg.threads.ConsoleOutputTool;
 
 public class Map {
-	
-	
+
 	/**
 	 * Temporary method, used for testing this class.
 	 * 
@@ -21,67 +21,49 @@ public class Map {
 	public static void main(String[] args) {
 		new Map();
 	}
-	
+
 	private List<Event> events;
-	private File log;
-	private FileWriter logWriter;
-	
+	private ConsoleOutputTool out;
+
 	public Map() {
-		log = new File("log.txt");
-		if(!log.exists()) {
-			try {
-				log.createNewFile();
-				logWriter = new FileWriter(log); 
-				logWriter.write("Created new log file, because no log file was found.\n");
-				logWriter.flush();
-			} catch (IOException e) {
-				System.out.println("The log file was not found and the following other error occurred: ");
-				e.printStackTrace();
-			}
-		} else {
-			try {
-				logWriter = new FileWriter(log);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		
-		
+		out = new ConsoleOutputTool("Map");
+
 	}
-	
+
 	public void loadMap(String name) {
-		File jSon = new File(name);
-		if(verifyMap(jSon)) {
-			
+		File file = new File(name);
+		if (!verifyMap(file))
+			return;
+
+		String loadedContent = "";
+		try {
+			loadedContent = new String(Files.readAllBytes(Paths.get(file.toURI())));
+		} catch (IOException e) {
+			out.println("Something went terribly wrong.");
+			e.printStackTrace();
 		}
+		JSONObject json = new JSONObject(loadedContent);
+
 	}
-	
+
 	private boolean verifyMap(File file) {
-		if(!file.exists())
+		if (!file.exists())
 			return false;
-		if (!file.getName().substring(file.getName().length() - 5).equalsIgnoreCase(".json")) 
+		if (!file.getName().substring(file.getName().length() - 5).equalsIgnoreCase(".json"))
 			return false;
-		
+
 		try {
 			String content = new String(Files.readAllBytes(Paths.get(file.toURI())));
 			new JSONObject(content);
 		} catch (IOException e) {
-			try {
-				logWriter.write("Failed to create the JSON object and/or reading the file at: " + file.getAbsolutePath());
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
+			out.println("Failed to create the JSON object and/or reading the file at: " + file.getAbsolutePath());
 			return false;
 		}
-		
-		
-		//verifying with server?
-		//When yes, then keep in mind, that this class is also used by the server.
-		
+
+		// verifying with server?
+		// When yes, then keep in mind, that this class is also used by the server.
+
 		return true;
 	}
-	
-	public File getLog() {
-		return log;
-	}
+
 }
