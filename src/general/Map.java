@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 
 import org.json.JSONObject;
 
+import classBase.Graph;
 import classBase.List;
 import wg.threads.ConsoleOutputTool;
 
@@ -23,6 +24,7 @@ public class Map {
 	}
 
 	private List<Event> events;
+	private Graph graph;
 	private ConsoleOutputTool out;
 
 	public Map() {
@@ -43,6 +45,8 @@ public class Map {
 			e.printStackTrace();
 		}
 		JSONObject json = new JSONObject(loadedContent);
+		
+		//
 
 	}
 
@@ -64,6 +68,14 @@ public class Map {
 		// When yes, then keep in mind, that this class is also used by the server.
 
 		return true;
+	}
+	
+	public Graph getGraph() {
+		return graph;
+	}
+	
+	public List<Event> getEventList() {
+		return events;
 	}
 
 }
