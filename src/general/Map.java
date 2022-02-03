@@ -45,7 +45,7 @@ public class Map {
 			e.printStackTrace();
 		}
 		JSONObject json = new JSONObject(loadedContent);
-		
+
 		//
 
 	}
@@ -69,11 +69,11 @@ public class Map {
 
 		return true;
 	}
-	
+
 	public Graph getGraph() {
 		return graph;
 	}
-	
+
 	public List<Event> getEventList() {
 		return events;
 	}
