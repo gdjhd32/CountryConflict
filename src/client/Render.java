@@ -3,10 +3,6 @@ package client;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.awt.TextArea;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
@@ -385,6 +381,7 @@ public class Render extends JFrame {
 
 		private class ImageStorage {
 
+			@SuppressWarnings("unused")
 			public final BufferedImage img;
 			private int referenceCounter = 1;
 			public final String name;
