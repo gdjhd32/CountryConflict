@@ -26,8 +26,8 @@ public class Render extends JFrame {
 
 	private final int FRAME_WIDTH = 1000, FRAME_HEIGHT = (int) (FRAME_WIDTH * 0.75), FRAME_X = 0, FRAME_Y = 0;
 
-	private int right = 0, down = 0, rotation = 0;	//testing purpose variables
-	
+	private int right = 0, down = 0, rotation = 0; // testing purpose variables
+
 	private int refreshTime = 0;
 
 	private JPanel mapPanel, infoPanel, shortcutPanel;
@@ -42,7 +42,7 @@ public class Render extends JFrame {
 		this.refreshTime = refreshTime;
 		addingComponents();
 	}
-	
+
 	public void changeRefreshTime(int refreshTime) {
 		this.refreshTime = refreshTime;
 		try {
@@ -52,7 +52,7 @@ public class Render extends JFrame {
 			System.err.println("Object mapPanel does not have a ImagePane object at index 0!");
 		}
 	}
-	
+
 	public void renderMapImage(String name, int x, int y, int z, int width, int height, int rotation) {
 		try {
 			ImagePane iP = (ImagePane) mapPanel.getComponent(0);
@@ -61,7 +61,7 @@ public class Render extends JFrame {
 			System.err.println("Object mapPanel does not have a ImagePane object at index 0!");
 		}
 	}
-	
+
 	public void deleteMapImage(String name, int x, int y, int z, int width, int height, int rotation) {
 		try {
 			ImagePane iP = (ImagePane) mapPanel.getComponent(0);
@@ -93,10 +93,13 @@ public class Render extends JFrame {
 
 		});
 
-		ImagePane pane = new ImagePane(refreshTime);
-		pane.addImage("tmp", 0, 0, 0, 710, 500, 0);
-		pane.addImage("tmp2", 100, 10, 1, 400, 350, 0);
-		pane.addImage("tmp3", 150, 70, 2, 400, 350, 0);
+		JPanel mapSkeletonPanel = new JPanel();
+
+		ImagePane mapImagePane = new ImagePane(refreshTime);
+		mapImagePane.setBounds(5, 15, 710, 500);
+		mapImagePane.addImage("tmp", 0, 0, 0, 710, 500, 0);
+		mapImagePane.addImage("tmp2", 100, 10, 1, 400, 350, 0);
+		mapImagePane.addImage("tmp3", 150, 70, 2, 400, 350, 0);
 
 		mapPanel = new JPanel();
 		mapPanel.addMouseListener(new MouseListener() {
@@ -123,7 +126,7 @@ public class Render extends JFrame {
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				pane.deleteImage("tmp3", 150 + (5 * right), 70 + (5 * down), 2, 400, 350, rotation);
+				mapImagePane.deleteImage("tmp3", 150 + (5 * right), 70 + (5 * down), 2, 400, 350, rotation);
 				if (e.getButton() == 1) {
 					right++;
 				} else if (e.getButton() == 2) {
@@ -131,16 +134,17 @@ public class Render extends JFrame {
 				} else if (e.getButton() == 3) {
 					down++;
 				}
-				pane.addImage("tmp3", 150 + (5 * right), 70 + (5 * down), 2, 400, 350, rotation);
+				mapImagePane.addImage("tmp3", 150 + (5 * right), 70 + (5 * down), 2, 400, 350, rotation);
 			}
 		});
-		
+
 		mapPanel.setBorder(BorderFactory.createTitledBorder("Map"));
 		GroupLayout mapPanelLayout = new GroupLayout(mapPanel);
 		mapPanel.setLayout(mapPanelLayout);
-		mapPanelLayout.setHorizontalGroup(mapPanelLayout.createSequentialGroup().addComponent(pane,
+		mapPanel.add(mapImagePane);
+		mapPanelLayout.setHorizontalGroup(mapPanelLayout.createSequentialGroup().addComponent(mapSkeletonPanel,
 				GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE));
-		mapPanelLayout.setVerticalGroup(mapPanelLayout.createParallelGroup().addComponent(pane,
+		mapPanelLayout.setVerticalGroup(mapPanelLayout.createParallelGroup().addComponent(mapSkeletonPanel,
 				GroupLayout.PREFERRED_SIZE, 500, GroupLayout.PREFERRED_SIZE));
 
 		infoPanel = new JPanel();
@@ -196,7 +200,7 @@ public class Render extends JFrame {
 			rT = new RenderTimer(refreshTime);
 			rT.start();
 		}
-		
+
 		public void changeRefreshTime(int refreshTime) {
 			rT.changeRefreshTime(refreshTime);
 		}
@@ -304,7 +308,7 @@ public class Render extends JFrame {
 		protected void paintComponent(Graphics g) {
 			super.paintComponent(g);
 			boolean inserted;
-			
+
 			List<Parameter> sortedParameter = new List<>();
 			imageParameter.toFirst();
 			while (imageParameter.hasAccess()) {
@@ -334,17 +338,18 @@ public class Render extends JFrame {
 			}
 
 			Graphics2D g2d = (Graphics2D) g.create();
-			
+
 			// for smoother rendering
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			
-			AffineTransform old = null;	//used to store the original rotation value
+
+			AffineTransform old = null; // used to store the original rotation value
 			sortedParameter.toFirst();
 			while (sortedParameter.hasAccess()) {
 				Parameter parameter = sortedParameter.getContent();
 				if (parameter.img != null) {
 					old = g2d.getTransform();
-					g2d.rotate(Math.toRadians(parameter.rotation), parameter.x + (parameter.width / 2), parameter.y + (parameter.height / 2));
+					g2d.rotate(Math.toRadians(parameter.rotation), parameter.x + (parameter.width / 2),
+							parameter.y + (parameter.height / 2));
 					g2d.drawImage(parameter.img, parameter.x, parameter.y, parameter.width, parameter.height, this);
 					g2d.setTransform(old);
 				}
@@ -372,7 +377,7 @@ public class Render extends JFrame {
 					repaint();
 				}
 			}
-			
+
 			public void changeRefreshTime(int refreshTime) {
 				this.refreshTime = refreshTime;
 			}
