@@ -41,6 +41,7 @@ public class Render extends JFrame {
 		setLocation(FRAME_X, FRAME_Y);
 		this.refreshTime = refreshTime;
 		addingComponents();
+		renderMapImage("tmp3", 50, 0, 2, 200, 200, 90);
 	}
 
 	public void changeRefreshTime(int refreshTime) {
