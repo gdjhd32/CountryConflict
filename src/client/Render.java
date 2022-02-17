@@ -1,10 +1,16 @@
 package client;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.LayoutManager;
 import java.awt.RenderingHints;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.geom.AffineTransform;
@@ -26,32 +32,16 @@ public class Render extends JFrame {
 
 	private final int FRAME_WIDTH = 1000, FRAME_HEIGHT = (int) (FRAME_WIDTH * 0.75), FRAME_X = 0, FRAME_Y = 0;
 
-	private int right = 0, down = 0, rotation = 0; // testing purpose variables
-
-	private int refreshTime = 0;
-
 	private JPanel mapPanel, infoPanel, shortcutPanel;
 
 	public static void main(String[] args) {
-		new Render(100);
+		new Render();
 	}
 
-	public Render(int refreshTime) {
+	public Render() {
 		super("Country Conflict");
 		setLocation(FRAME_X, FRAME_Y);
-		this.refreshTime = refreshTime;
 		addingComponents();
-		renderMapImage("tmp3", 50, 0, 2, 200, 200, 90);
-	}
-
-	public void changeRefreshTime(int refreshTime) {
-		this.refreshTime = refreshTime;
-		try {
-			ImagePane iP = (ImagePane) mapPanel.getComponent(0);
-			iP.changeRefreshTime(refreshTime);
-		} catch (Exception e) {
-			System.err.println("Object mapPanel does not have a ImagePane object at index 0!");
-		}
 	}
 
 	public void renderMapImage(String name, int x, int y, int z, int width, int height, int rotation) {
@@ -77,113 +67,140 @@ public class Render extends JFrame {
 		addWindowListener(new WindowAdapter() {
 
 			@Override
-			public void windowClosed(WindowEvent e) {
-
-			}
-
-			@Override
 			public void windowClosing(WindowEvent e) {
 				// ending program on exit
 				initializeEnd();
 			}
 
+		});
+
+		// creating mapPanel
+		JPanel mapSkeletonPanel = new JPanel();
+		mapSkeletonPanel.setBounds(0, 0, 800, 500);
+
+		ImagePane mapImagePane = new ImagePane();
+		mapImagePane.setBounds(0, 0, 2000, 1000);
+		mapImagePane.addImage("tmp", 0, 0, 0, 2000, 1000, 0);
+		mapImagePane.addImage("tmp2", 100, 10, 1, 400, 350, 0);
+		mapImagePane.addImage("tmp3", 150, 70, 2, 400, 350, 0);
+		mapImagePane.setLayout(new LayoutManager() {
+
 			@Override
-			public void windowLostFocus(WindowEvent e) {
+			public void removeLayoutComponent(Component comp) {
 
 			}
 
+			@Override
+			public Dimension preferredLayoutSize(Container parent) {
+				return null;
+			}
+
+			@Override
+			public Dimension minimumLayoutSize(Container parent) {
+				return null;
+			}
+
+			@Override
+			public void layoutContainer(Container parent) {
+
+			}
+
+			@Override
+			public void addLayoutComponent(String name, Component comp) {
+
+			}
 		});
 
-		JPanel mapSkeletonPanel = new JPanel();
-
-		ImagePane mapImagePane = new ImagePane(refreshTime);
-		mapImagePane.setBounds(5, 15, 710, 500);
-		mapImagePane.addImage("tmp", 0, 0, 0, 710, 500, 0);
-		mapImagePane.addImage("tmp2", 100, 10, 1, 400, 350, 0);
-		mapImagePane.addImage("tmp3", 150, 70, 2, 400, 350, 0);
-
 		mapPanel = new JPanel();
-		mapPanel.addMouseListener(new MouseListener() {
+		mapPanel.addMouseListener(new MouseAdapter() {
 
 			@Override
 			public void mouseReleased(MouseEvent e) {
-
+				if (e.getButton() == MouseEvent.BUTTON1) {
+					((MouseDraggingControl) mapPanel.getMouseMotionListeners()[0]).resetMouseCoordinates();
+				}
 			}
 
 			@Override
 			public void mousePressed(MouseEvent e) {
-
-			}
-
-			@Override
-			public void mouseExited(MouseEvent e) {
-
-			}
-
-			@Override
-			public void mouseEntered(MouseEvent e) {
-
-			}
-
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				mapImagePane.deleteImage("tmp3", 150 + (5 * right), 70 + (5 * down), 2, 400, 350, rotation);
-				if (e.getButton() == 1) {
-					right++;
-				} else if (e.getButton() == 2) {
-					rotation += 10;
-				} else if (e.getButton() == 3) {
-					down++;
+				if (e.getButton() == MouseEvent.BUTTON1) {
+					((MouseDraggingControl) mapPanel.getMouseMotionListeners()[0]).setMouseCoordinates(e.getX(),
+							e.getY());
 				}
-				mapImagePane.addImage("tmp3", 150 + (5 * right), 70 + (5 * down), 2, 400, 350, rotation);
 			}
 		});
 
-		mapPanel.setBorder(BorderFactory.createTitledBorder("Map"));
+		mapPanel.addMouseMotionListener(new MouseDraggingControl());
+		mapPanel.add(mapImagePane);
 		GroupLayout mapPanelLayout = new GroupLayout(mapPanel);
 		mapPanel.setLayout(mapPanelLayout);
-		mapPanel.add(mapImagePane);
 		mapPanelLayout.setHorizontalGroup(mapPanelLayout.createSequentialGroup().addComponent(mapSkeletonPanel,
-				GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE));
-		mapPanelLayout.setVerticalGroup(mapPanelLayout.createParallelGroup().addComponent(mapSkeletonPanel,
-				GroupLayout.PREFERRED_SIZE, 500, GroupLayout.PREFERRED_SIZE));
+				mapSkeletonPanel.getWidth(), mapSkeletonPanel.getWidth(), mapSkeletonPanel.getWidth()));
+		mapPanelLayout.setVerticalGroup(mapPanelLayout.createSequentialGroup().addComponent(mapSkeletonPanel,
+				mapSkeletonPanel.getHeight(), mapSkeletonPanel.getHeight(), mapSkeletonPanel.getHeight()));
+
+		// creating infoPanel
+		JPanel infoSkeletonPanel = new JPanel();
+		infoSkeletonPanel.setBounds(0, 0, mapSkeletonPanel.getWidth(), 100);
+		infoSkeletonPanel.setBackground(new Color(0, 0, 0));
 
 		infoPanel = new JPanel();
 		infoPanel.setBorder(BorderFactory.createTitledBorder("Information"));
+		GroupLayout infoPanelLayout = new GroupLayout(infoPanel);
+		infoPanel.setLayout(infoPanelLayout);
+		infoPanelLayout.setHorizontalGroup(infoPanelLayout.createSequentialGroup().addComponent(infoSkeletonPanel,
+				infoSkeletonPanel.getWidth(), infoSkeletonPanel.getWidth(), infoSkeletonPanel.getWidth()));
+		infoPanelLayout.setVerticalGroup(infoPanelLayout.createSequentialGroup().addComponent(infoSkeletonPanel,
+				infoSkeletonPanel.getHeight(), infoSkeletonPanel.getHeight(), infoSkeletonPanel.getHeight()));
+
+		// creating shortcutPanel
+		JPanel shortcutSkeletonPanel = new JPanel();
+		shortcutSkeletonPanel.setBounds(0, 0, 100, mapSkeletonPanel.getHeight());
+		shortcutSkeletonPanel.setBackground(new Color(0, 0, 0));
 
 		shortcutPanel = new JPanel();
 		shortcutPanel.setBorder(BorderFactory.createTitledBorder("Shortcuts"));
+		GroupLayout shortcutPanelLayout = new GroupLayout(shortcutPanel);
+		shortcutPanel.setLayout(shortcutPanelLayout);
+		shortcutPanelLayout.setHorizontalGroup(shortcutPanelLayout.createSequentialGroup().addComponent(
+				shortcutSkeletonPanel, shortcutSkeletonPanel.getWidth(), shortcutSkeletonPanel.getWidth(),
+				shortcutSkeletonPanel.getWidth()));
+		shortcutPanelLayout.setVerticalGroup(shortcutPanelLayout.createSequentialGroup().addComponent(
+				shortcutSkeletonPanel, shortcutSkeletonPanel.getHeight(), shortcutSkeletonPanel.getHeight(),
+				shortcutSkeletonPanel.getHeight()));
 
+		// creating layout for all major components
 		GroupLayout layout = new GroupLayout(getContentPane());
 		getContentPane().setLayout(layout);
-		layout.setHorizontalGroup(layout.createSequentialGroup().addContainerGap()
-				.addGroup(layout.createParallelGroup(Alignment.LEADING)
-						.addGroup(layout.createSequentialGroup().addContainerGap()
-								.addGroup(layout.createParallelGroup(Alignment.LEADING)
-										.addComponent(mapPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
-												Short.MAX_VALUE)
-										.addComponent(infoPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
-												Short.MAX_VALUE))))
+		layout.setHorizontalGroup(layout.createSequentialGroup().addContainerGap().addGroup(layout
+				.createParallelGroup(Alignment.LEADING)
+				.addGroup(layout.createSequentialGroup().addGroup(layout.createParallelGroup(Alignment.LEADING)
+						.addComponent(mapPanel, mapSkeletonPanel.getWidth(), mapSkeletonPanel.getWidth(),
+								mapSkeletonPanel.getWidth())
+						.addComponent(infoPanel, infoSkeletonPanel.getWidth(), infoSkeletonPanel.getWidth(),
+								infoSkeletonPanel.getWidth()))))
 				.addPreferredGap(ComponentPlacement.RELATED)
-				.addComponent(shortcutPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(shortcutPanel, shortcutSkeletonPanel.getWidth(), shortcutSkeletonPanel.getWidth(),
+						shortcutSkeletonPanel.getWidth())
 				.addContainerGap());
 
 		layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING)
 				.addGroup(layout.createSequentialGroup().addContainerGap()
-						.addComponent(mapPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-								GroupLayout.PREFERRED_SIZE)
+						.addComponent(mapPanel, mapSkeletonPanel.getHeight(), mapSkeletonPanel.getHeight(),
+								mapSkeletonPanel.getHeight())
 						.addPreferredGap(ComponentPlacement.RELATED)
-						.addComponent(infoPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-								GroupLayout.PREFERRED_SIZE)
+						.addComponent(infoPanel, infoSkeletonPanel.getHeight(), infoSkeletonPanel.getHeight(),
+								infoSkeletonPanel.getHeight())
 						.addContainerGap())
-				.addGroup(layout
-						.createSequentialGroup().addContainerGap().addComponent(shortcutPanel,
-								GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addContainerGap()));
+				.addGroup(layout.createSequentialGroup().addContainerGap().addComponent(shortcutPanel,
+						shortcutSkeletonPanel.getHeight(), shortcutSkeletonPanel.getHeight(),
+						shortcutSkeletonPanel.getHeight())));
 
+		// settings for the JFrame
 		setResizable(false);
 		setSize(FRAME_WIDTH, FRAME_HEIGHT);
 		setVisible(true);
+		setBounds(200, 100, getWidth(), getHeight());
 	}
 
 	private void initializeEnd() {
@@ -191,19 +208,66 @@ public class Render extends JFrame {
 		System.exit(0);
 	}
 
+	private class MouseDraggingControl implements MouseMotionListener {
+
+		int x = 0, y = 0;
+		int mX = -1, mY = -1;
+
+		public MouseDraggingControl() {
+
+		}
+
+		@Override
+		public void mouseDragged(MouseEvent e) {
+			ImagePane iP = null;
+			JPanel jP = null;
+			try {
+				iP = (ImagePane) mapPanel.getComponent(0);
+				jP = (JPanel) mapPanel.getComponent(1);
+			} catch (Exception ex) {
+				System.err.println("Object mapPanel does not have the right objects at 0 or 1.");
+			}
+			if (mX != -1 && mY != -1) {
+				x += e.getX() - mX;
+				y += e.getY() - mY;
+				if (x > 0)
+					x = 0;
+				if (x < jP.getWidth() - iP.getWidth())
+					x = jP.getWidth() - iP.getWidth();
+				if (y > 0)
+					y = 0;
+				if (y < jP.getHeight() - iP.getHeight())
+					y = jP.getHeight() - iP.getHeight();
+			}
+			iP.setBounds(x, y, iP.getWidth(), iP.getHeight());
+			mX = e.getX();
+			mY = e.getY();
+		}
+
+		public void setMouseCoordinates(int mX, int mY) {
+			this.mX = mX;
+			this.mY = mY;
+		}
+
+		public void resetMouseCoordinates() {
+			mX = -1;
+			mY = -1;
+		}
+
+		@Override
+		public void mouseMoved(MouseEvent e) {
+
+		}
+
+	}
+
 	private final class ImagePane extends JPanel {
 
 		private List<ImageStorage> images = new List<>();
 		private List<ImageParameterList> imageParameter = new List<>();
-		private RenderTimer rT;
 
-		public ImagePane(int refreshTime) {
-			rT = new RenderTimer(refreshTime);
-			rT.start();
-		}
+		public ImagePane() {
 
-		public void changeRefreshTime(int refreshTime) {
-			rT.changeRefreshTime(refreshTime);
 		}
 
 		public void addImage(String name, int x, int y, int z, int width, int height, int rotation) {
@@ -357,32 +421,6 @@ public class Render extends JFrame {
 				sortedParameter.next();
 			}
 			g2d.dispose();
-		}
-
-		private final class RenderTimer extends Thread {
-
-			public int refreshTime;
-
-			public RenderTimer(int refreshTime) {
-				this.refreshTime = refreshTime;
-			}
-
-			@Override
-			public void run() {
-				while (true) {
-					try {
-						Thread.sleep(refreshTime);
-					} catch (Exception e) {
-						System.err.println("Something wrong with the refreshing timer!");
-					}
-					repaint();
-				}
-			}
-
-			public void changeRefreshTime(int refreshTime) {
-				this.refreshTime = refreshTime;
-			}
-
 		}
 
 		private class ImageStorage {
