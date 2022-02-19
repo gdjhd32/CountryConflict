@@ -1,0 +1,27 @@
+{
+    "mapImage" : [
+        "tmp", 2000, 1000
+    ],
+    "areas" : [
+        {"areaName" : "Hell", "labelX" : 0, "labelY" : 0, "additionalLabelWidth" : 0, "buildingSlots" : [
+            {"index" : 0, "status" : "empty", "lvl" : 0, "x" : 0, "y" : 0}
+        ], "stats": {
+            "citizens" : 0
+        }},
+        {"areaName" : "Bruchtal", "labelX" : 0, "labelY" : 50, "additionalLabelWidth" : 3, "buildingSlots" : [
+            {"index" : 0, "status" : "empty", "lvl" : 0, "x" : 0, "y" : 0}
+        ], "stats": {
+            "citizens" : 0
+        }},
+        {"areaName" : "jnboipfghdrsnjoigfdsnoiujpfgdsnojuipgfdsnojpfgd", "labelX" : 0, "labelY" : 100, "additionalLabelWidth" : 7, "buildingSlots" : [
+            {"index" : 0, "status" : "empty", "lvl" : 0, "x" : 0, "y" : 0}
+        ], "stats": {
+            "citizens" : 0
+        }}
+    ],
+    "graphMatrix" : [
+        [null, [], []],
+        [[], null, []],
+        [[], [], null]
+    ]
+}

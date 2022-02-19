@@ -2,7 +2,7 @@ package classBase;
 
 public class BasicGraphOperations {
 	
-	protected Graph createGraph(String[] connectionNames, int[][] connections) {
+	public Graph createGraph(String[] connectionNames, int[][] connections) {
         Graph graph = new Graph();
 
         for (int i = 0; i < connectionNames.length; i++) {    //initialisation of the vertecies in locations
@@ -20,7 +20,7 @@ public class BasicGraphOperations {
         return graph;
     }
 	
-	protected void outputGraph(Graph graph) {
+	public void outputGraph(Graph graph) {
     	//printing out all vertecies of cities
         List<Vertex> listV = graph.getVertices();
         listV.toFirst();
