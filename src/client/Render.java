@@ -8,6 +8,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.LayoutManager;
 import java.awt.RenderingHints;
+import java.awt.TextArea;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -36,11 +37,40 @@ import general.Map;
 public class Render extends JFrame {
 
 	private final int FRAME_WIDTH = 1000, FRAME_HEIGHT = (int) (FRAME_WIDTH * 0.75), FRAME_X = 0, FRAME_Y = 0;
+	private final int MAP_WIDTH = 800, MAP_HEIGHT = 500;
 
 	private JPanel mapPanel, infoPanel, shortcutPanel;
 	private Area[] areas;
 
 	private JLabel[] names;
+
+	private final LayoutManager EMPTY_LAYOUT_MANAGER = new LayoutManager() {
+
+		@Override
+		public void removeLayoutComponent(Component comp) {
+
+		}
+
+		@Override
+		public Dimension preferredLayoutSize(Container parent) {
+			return null;
+		}
+
+		@Override
+		public Dimension minimumLayoutSize(Container parent) {
+			return null;
+		}
+
+		@Override
+		public void layoutContainer(Container parent) {
+
+		}
+
+		@Override
+		public void addLayoutComponent(String name, Component comp) {
+
+		}
+	};
 
 	public enum WindowComponent {
 		Map, Info, Shortcut
@@ -52,53 +82,53 @@ public class Render extends JFrame {
 		addingComponents();
 	}
 
-	public void renderImage(String name, int x, int y, int z, int width, int height, int rotation,
-			WindowComponent location) {
-		try {
-			ImagePane iP = null;
-			switch (location) {
-			case Map:
-				iP = (ImagePane) mapPanel.getComponent(0);
-				break;
-			case Info:
-				iP = (ImagePane) infoPanel.getComponent(0);
-				break;
-			case Shortcut:
-				iP = (ImagePane) shortcutPanel.getComponent(0);
-				break;
-			default:
-				System.err.println("Invalid location!");
-				break;
-			}
-			iP.addImage(name, x, y, z, width, height, rotation);
-		} catch (Exception e) {
-			System.err.println("Object mapPanel does not have a ImagePane object at index 0!");
-		}
-	}
-
-	public void deleteImage(String name, int x, int y, int z, int width, int height, int rotation,
-			WindowComponent location) {
-		try {
-			ImagePane iP = null;
-			switch (location) {
-			case Map:
-				iP = (ImagePane) mapPanel.getComponent(0);
-				break;
-			case Info:
-				iP = (ImagePane) infoPanel.getComponent(0);
-				break;
-			case Shortcut:
-				iP = (ImagePane) shortcutPanel.getComponent(0);
-				break;
-			default:
-				System.err.println("Invalid location!");
-				break;
-			}
-			iP.deleteImage(name, x, y, z, width, height, rotation);
-		} catch (Exception e) {
-			System.err.println("Object mapPanel does not have a ImagePane object at index 0!");
-		}
-	}
+//	public void renderImage(String name, int x, int y, int z, int width, int height, int rotation,
+//			WindowComponent location) {
+//		try {
+//			ImagePane iP = null;
+//			switch (location) {
+//			case Map:
+//				iP = (ImagePane) mapPanel.getComponent(0);
+//				break;
+//			case Info:
+//				iP = (ImagePane) infoPanel.getComponent(0);
+//				break;
+//			case Shortcut:
+//				iP = (ImagePane) shortcutPanel.getComponent(0);
+//				break;
+//			default:
+//				System.err.println("Invalid location!");
+//				break;
+//			}
+//			iP.addImage(name, x, y, z, width, height, rotation);
+//		} catch (Exception e) {
+//			System.err.println("Object mapPanel does not have a ImagePane object at index 0!");
+//		}
+//	}
+//
+//	public void deleteImage(String name, int x, int y, int z, int width, int height, int rotation,
+//			WindowComponent location) {
+//		try {
+//			ImagePane iP = null;
+//			switch (location) {
+//			case Map:
+//				iP = (ImagePane) mapPanel.getComponent(0);
+//				break;
+//			case Info:
+//				iP = (ImagePane) infoPanel.getComponent(0);
+//				break;
+//			case Shortcut:
+//				iP = (ImagePane) shortcutPanel.getComponent(0);
+//				break;
+//			default:
+//				System.err.println("Invalid location!");
+//				break;
+//			}
+//			iP.deleteImage(name, x, y, z, width, height, rotation);
+//		} catch (Exception e) {
+//			System.err.println("Object mapPanel does not have a ImagePane object at index 0!");
+//		}
+//	}
 
 	public void renderMap(Map map) {
 		ImagePane iP;
@@ -109,9 +139,10 @@ public class Render extends JFrame {
 			System.err.println("Object mapPanel does not have a ImagePane object at index 0!");
 			return;
 		}
-		iP.addImage(map.mapImageName, 0, 0, Integer.MIN_VALUE, map.mapImageWidth, map.mapImageHeigth, 0);
+		//iP.addImage(map.mapImageName, 0, 0, Integer.MIN_VALUE, map.mapImageWidth, map.mapImageHeigth, 0);
 		areas = map.getAreas();
 		names = new JLabel[areas.length];
+		InformationPopUpWindow[] ipuws = new InformationPopUpWindow[areas.length];
 		for (int i = 0; i < names.length; i++) {
 			names[i] = new JLabel(areas[i].name);
 			Rectangle2D r = iP.getGraphics().getFont().getStringBounds(areas[i].name,
@@ -120,7 +151,12 @@ public class Render extends JFrame {
 					14);
 			names[i].setForeground(new Color(0, 255, 0));
 			iP.add(names[i]);
-			names[i].addMouseListener(new AreaMouseListener(names[i]));
+
+			ipuws[i] = new InformationPopUpWindow(areas[i]);
+			names[i].addMouseListener(new AreaMouseListener(names[i], ipuws[i]));
+		}
+		for (int i = 0; i < ipuws.length; i++) {
+			iP.add(ipuws[i]);
 		}
 	}
 
@@ -137,37 +173,8 @@ public class Render extends JFrame {
 		});
 
 		// creating mapPanel
-		JPanel mapSkeletonPanel = new JPanel();
-		mapSkeletonPanel.setBounds(0, 0, 800, 500);
-
 		ImagePane mapImagePane = new ImagePane();
-		mapImagePane.setLayout(new LayoutManager() {
-
-			@Override
-			public Dimension preferredLayoutSize(Container parent) {
-				return null;
-			}
-
-			@Override
-			public Dimension minimumLayoutSize(Container parent) {
-				return null;
-			}
-
-			@Override
-			public void layoutContainer(Container parent) {
-
-			}
-
-			@Override
-			public void addLayoutComponent(String name, Component comp) {
-
-			}
-
-			@Override
-			public void removeLayoutComponent(Component comp) {
-
-			}
-		});
+		mapImagePane.setLayout(EMPTY_LAYOUT_MANAGER);
 
 		mapPanel = new JPanel();
 		mapPanel.addMouseListener(new MouseAdapter() {
@@ -191,18 +198,13 @@ public class Render extends JFrame {
 
 		});
 
-		mapPanel.addMouseMotionListener(new MouseDraggingControl());
+		mapPanel.addMouseMotionListener(new MouseDraggingControl(0, mapPanel));
+		mapPanel.setLayout(EMPTY_LAYOUT_MANAGER);
 		mapPanel.add(mapImagePane);
-		GroupLayout mapPanelLayout = new GroupLayout(mapPanel);
-		mapPanel.setLayout(mapPanelLayout);
-		mapPanelLayout.setHorizontalGroup(mapPanelLayout.createSequentialGroup().addComponent(mapSkeletonPanel,
-				mapSkeletonPanel.getWidth(), mapSkeletonPanel.getWidth(), mapSkeletonPanel.getWidth()));
-		mapPanelLayout.setVerticalGroup(mapPanelLayout.createSequentialGroup().addComponent(mapSkeletonPanel,
-				mapSkeletonPanel.getHeight(), mapSkeletonPanel.getHeight(), mapSkeletonPanel.getHeight()));
 
 		// creating infoPanel
 		JPanel infoSkeletonPanel = new JPanel();
-		infoSkeletonPanel.setBounds(0, 0, mapSkeletonPanel.getWidth(), 100);
+		infoSkeletonPanel.setBounds(0, 0, MAP_WIDTH, 100);
 		infoSkeletonPanel.setBackground(new Color(0, 0, 0));
 
 		infoPanel = new JPanel();
@@ -216,7 +218,7 @@ public class Render extends JFrame {
 
 		// creating shortcutPanel
 		JPanel shortcutSkeletonPanel = new JPanel();
-		shortcutSkeletonPanel.setBounds(0, 0, 100, mapSkeletonPanel.getHeight());
+		shortcutSkeletonPanel.setBounds(0, 0, 100, MAP_HEIGHT);
 		shortcutSkeletonPanel.setBackground(new Color(0, 0, 0));
 
 		shortcutPanel = new JPanel();
@@ -233,13 +235,13 @@ public class Render extends JFrame {
 		// creating layout for all major components
 		GroupLayout layout = new GroupLayout(getContentPane());
 		getContentPane().setLayout(layout);
-		layout.setHorizontalGroup(layout.createSequentialGroup().addContainerGap().addGroup(layout
-				.createParallelGroup(Alignment.LEADING)
-				.addGroup(layout.createSequentialGroup().addGroup(layout.createParallelGroup(Alignment.LEADING)
-						.addComponent(mapPanel, mapSkeletonPanel.getWidth(), mapSkeletonPanel.getWidth(),
-								mapSkeletonPanel.getWidth())
-						.addComponent(infoPanel, infoSkeletonPanel.getWidth(), infoSkeletonPanel.getWidth(),
-								infoSkeletonPanel.getWidth()))))
+		layout.setHorizontalGroup(layout.createSequentialGroup().addContainerGap()
+				.addGroup(layout.createParallelGroup(Alignment.LEADING)
+						.addGroup(layout.createSequentialGroup()
+								.addGroup(layout.createParallelGroup(Alignment.LEADING)
+										.addComponent(mapPanel, MAP_WIDTH, MAP_WIDTH, MAP_WIDTH)
+										.addComponent(infoPanel, infoSkeletonPanel.getWidth(),
+												infoSkeletonPanel.getWidth(), infoSkeletonPanel.getWidth()))))
 				.addPreferredGap(ComponentPlacement.RELATED)
 				.addComponent(shortcutPanel, shortcutSkeletonPanel.getWidth(), shortcutSkeletonPanel.getWidth(),
 						shortcutSkeletonPanel.getWidth())
@@ -247,8 +249,7 @@ public class Render extends JFrame {
 
 		layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING)
 				.addGroup(layout.createSequentialGroup().addContainerGap()
-						.addComponent(mapPanel, mapSkeletonPanel.getHeight(), mapSkeletonPanel.getHeight(),
-								mapSkeletonPanel.getHeight())
+						.addComponent(mapPanel, MAP_HEIGHT, MAP_HEIGHT, MAP_HEIGHT)
 						.addPreferredGap(ComponentPlacement.RELATED)
 						.addComponent(infoPanel, infoSkeletonPanel.getHeight(), infoSkeletonPanel.getHeight(),
 								infoSkeletonPanel.getHeight())
@@ -269,38 +270,80 @@ public class Render extends JFrame {
 		System.exit(0);
 	}
 
+	private class MouseEnteredListener implements MouseListener {
+
+		private boolean entered = false;
+
+		public MouseEnteredListener() {
+
+		}
+
+		@Override
+		public void mouseClicked(MouseEvent e) {
+
+		}
+
+		@Override
+		public void mousePressed(MouseEvent e) {
+
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {
+
+		}
+
+		@Override
+		public void mouseEntered(MouseEvent e) {
+			entered = true;
+			System.out.println("!");
+		}
+
+		@Override
+		public void mouseExited(MouseEvent e) {
+			entered = false;
+			System.out.println("?");
+		}
+
+		public boolean getEntered() {
+			return entered;
+		}
+
+	}
+
 	private class MouseDraggingControl implements MouseMotionListener {
 
-		int x = 0, y = 0;
-		int mX = -1, mY = -1;
-		boolean dragable = false;
+		private int x = 0, y = 0;
+		private int mX = -1, mY = -1;
+		private boolean dragable = false;
+		private int index = 0;
+		private JPanel parent;
 
-		public MouseDraggingControl() {
-
+		public MouseDraggingControl(int indexOfComponent, JPanel parentJPanel) {
+			index = indexOfComponent;
+			parent = parentJPanel;
 		}
 
 		@Override
 		public void mouseDragged(MouseEvent e) {
 			if (dragable) {
-				ImagePane iP = null;
-				JPanel jP = null;
+				Component iP = null;
 				try {
-					iP = (ImagePane) mapPanel.getComponent(0);
-					jP = (JPanel) mapPanel.getComponent(1);
+					iP = parent.getComponent(index);
 				} catch (Exception ex) {
-					System.err.println("Object mapPanel does not have the right objects at 0 or 1.");
+					System.err.println("Object mapPanel does not have the right object at " + index + ".");
 				}
 				if (mX != -1 && mY != -1) {
 					x += e.getX() - mX;
 					y += e.getY() - mY;
 					if (x > 0)
 						x = 0;
-					if (x < jP.getWidth() - iP.getWidth())
-						x = jP.getWidth() - iP.getWidth();
+					if (x < MAP_WIDTH - iP.getWidth())
+						x = MAP_WIDTH - iP.getWidth();
 					if (y > 0)
 						y = 0;
-					if (y < jP.getHeight() - iP.getHeight())
-						y = jP.getHeight() - iP.getHeight();
+					if (y < MAP_HEIGHT - iP.getHeight())
+						y = MAP_HEIGHT - iP.getHeight();
 				}
 				iP.setBounds(x, y, iP.getWidth(), iP.getHeight());
 				mX = e.getX();
@@ -329,17 +372,45 @@ public class Render extends JFrame {
 
 	}
 
+	private final class InformationPopUpWindow extends JPanel {
+
+		private final Area AREA;
+		private int x = 0, y = 0, width = 100, height = 100;
+
+		public InformationPopUpWindow(Area area) {
+			super();
+			setBounds(x, y, width, height);
+			setBorder(BorderFactory.createTitledBorder("Test"));
+			setVisible(false);
+			setEnabled(false);
+			AREA = area;
+		}
+
+		public void open() {
+			setVisible(true);
+			setEnabled(true);
+		}
+
+		public void close() {
+			setVisible(false);
+			setEnabled(false);
+		}
+
+	}
+
 	private final class AreaMouseListener implements MouseListener {
 
-		JLabel area;
+		private final JLabel AREA;
+		private final InformationPopUpWindow IPUW;
 
-		public AreaMouseListener(JLabel area) {
-			this.area = area;
+		public AreaMouseListener(JLabel area, InformationPopUpWindow ipuw) {
+			AREA = area;
+			IPUW = ipuw;
 		}
 
 		@Override
 		public void mouseClicked(MouseEvent e) {
-
+			IPUW.open();
 		}
 
 		@Override
@@ -354,12 +425,12 @@ public class Render extends JFrame {
 
 		@Override
 		public void mouseEntered(MouseEvent e) {
-			area.setForeground(new Color(255, 100, 0));
+			AREA.setForeground(new Color(255, 100, 0));
 		}
 
 		@Override
 		public void mouseExited(MouseEvent e) {
-			area.setForeground(new Color(0, 255, 0));
+			AREA.setForeground(new Color(0, 255, 0));
 		}
 
 	}
