@@ -46,16 +46,10 @@ public class Render extends JFrame {
 		Map, Info, Shortcut
 	};
 
-	public static void main(String[] args) {
-		new Render();
-	}
-
 	public Render() {
 		super("Country Conflict");
 		setLocation(FRAME_X, FRAME_Y);
 		addingComponents();
-		Map map = new Map("Map1");
-		renderMap(map);
 	}
 
 	public void renderImage(String name, int x, int y, int z, int width, int height, int rotation,
