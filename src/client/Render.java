@@ -12,6 +12,7 @@ import java.awt.TextArea;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -41,6 +42,7 @@ public class Render extends JFrame {
 
 	private JPanel mapPanel, infoPanel, shortcutPanel;
 	private Area[] areas;
+	private JFrame frame;
 
 	private JLabel[] names;
 
@@ -80,6 +82,7 @@ public class Render extends JFrame {
 
 	public Render() {
 		super("Country Conflict");
+		frame = this;
 		setLocation(FRAME_X, FRAME_Y);
 		addingComponents();
 		canOpenInfoWindow = true;
@@ -173,7 +176,7 @@ public class Render extends JFrame {
 	private void configuartionOfDragableComponentsOfMap() {
 		for (int i = 0; i < mapPanel.getComponentCount(); i++) {
 			mapPanel.getComponent(i).addMouseListener(new DragableWindowMouseListener(mapPanel.getComponent(i)));
-			mapPanel.getComponent(i).addMouseMotionListener(new DragableWindowMouseControl(i, mapPanel));
+			mapPanel.getComponent(i).addMouseMotionListener(new DragableWindowMouseControl(mapPanel, i));
 		}
 	}
 	
@@ -266,11 +269,11 @@ public class Render extends JFrame {
 		System.exit(0);
 	}
 
-	private class DragableWindowMouseListener implements MouseListener {
+	private class DragableWindowMouseListener extends MouseAdapter {
 
 		private boolean entered = false;
 		private Component c;
-
+		
 		public DragableWindowMouseListener(Component c) {
 			this.c = c;
 		}
@@ -283,8 +286,8 @@ public class Render extends JFrame {
 		@Override
 		public void mousePressed(MouseEvent e) {
 			if (e.getButton() == MouseEvent.BUTTON1) {
-				((DragableWindowMouseControl) c.getMouseMotionListeners()[0]).setMouseCoordinates(e.getX(),
-						e.getY());
+				((DragableWindowMouseControl) c.getMouseMotionListeners()[0]).setMouseCoordinates(e.getXOnScreen(),
+						e.getYOnScreen());
 				((DragableWindowMouseControl) c.getMouseMotionListeners()[0]).setDragable(true);
 			}
 		}
@@ -312,16 +315,17 @@ public class Render extends JFrame {
 		}
 	}
 
-	private class DragableWindowMouseControl implements MouseMotionListener {
+	private class DragableWindowMouseControl extends MouseMotionAdapter {
 
 		private int x = 0, y = 0;
 		private int mX = -1, mY = -1;
 		private boolean dragable = false;
 		private int index = 0;
 		private JPanel parent;
+		private boolean firstDragging;
 
-		public DragableWindowMouseControl(int indexOfComponent, JPanel parentJPanel) {
-			index = indexOfComponent;
+		public DragableWindowMouseControl(JPanel parentJPanel, int index) {
+			this.index = index;
 			parent = parentJPanel;
 		}
 
@@ -335,8 +339,15 @@ public class Render extends JFrame {
 					System.err.println("Object mapPanel does not have an object at " + index + ".");
 				}
 				if (mX != -1 && mY != -1) {
-					x += e.getX() - mX;
-					y += e.getY() - mY;
+					if (!firstDragging) {
+						x += e.getXOnScreen() - mX;
+						y += e.getYOnScreen() - mY;
+					} else {
+						x = c.getX();
+						y = c.getY();
+						firstDragging = false;
+					}
+					System.out.println(x + ", " + y);
 					if (c.getWidth() < MAP_WIDTH) {
 						if (x < 0)
 							x = 0;
@@ -362,12 +373,13 @@ public class Render extends JFrame {
 				}
 				c.setBounds(x, y, c.getWidth(), c.getHeight());
 				parent.repaint();
-				mX = e.getX();
-				mY = e.getY();
+				mX = e.getXOnScreen();
+				mY = e.getYOnScreen();
 			}
 		}
 
 		public void setMouseCoordinates(int mX, int mY) {
+			firstDragging = true;
 			this.mX = mX;
 			this.mY = mY;
 		}
@@ -379,19 +391,6 @@ public class Render extends JFrame {
 
 		public void setDragable(boolean dragable) {
 			this.dragable = dragable;
-		}
-
-		public void setIndex(int index) {
-			this.index = index;
-		}
-
-		public int getIndex() {
-			return index;
-		}
-
-		@Override
-		public void mouseMoved(MouseEvent e) {
-
 		}
 
 	}
@@ -410,7 +409,6 @@ public class Render extends JFrame {
 			setBorder(BorderFactory.createTitledBorder(AREA.NAME));
 			setVisible(false);
 			setEnabled(false);
-			addMouseListener(new DragableWindowMouseListener(this));
 		}
 
 		public void open() {
