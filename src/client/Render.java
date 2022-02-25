@@ -8,12 +8,10 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.LayoutManager;
 import java.awt.RenderingHints;
-import java.awt.TextArea;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
-import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.geom.AffineTransform;
@@ -42,7 +40,6 @@ public class Render extends JFrame {
 
 	private JPanel mapPanel, infoPanel, shortcutPanel;
 	private Area[] areas;
-	private JFrame frame;
 
 	private JLabel[] names;
 
@@ -82,7 +79,6 @@ public class Render extends JFrame {
 
 	public Render() {
 		super("Country Conflict");
-		frame = this;
 		setLocation(FRAME_X, FRAME_Y);
 		addingComponents();
 		canOpenInfoWindow = true;
