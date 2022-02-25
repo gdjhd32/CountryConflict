@@ -271,7 +271,6 @@ public class Render extends JFrame {
 
 	private class DragableWindowMouseListener extends MouseAdapter {
 
-		private boolean entered = false;
 		private Component c;
 		
 		public DragableWindowMouseListener(Component c) {
@@ -302,16 +301,12 @@ public class Render extends JFrame {
 
 		@Override
 		public void mouseEntered(MouseEvent e) {
-			entered = true;
+			
 		}
 
 		@Override
 		public void mouseExited(MouseEvent e) {
-			entered = false;
-		}
-
-		public boolean getEntered() {
-			return entered;
+			
 		}
 	}
 
@@ -347,7 +342,6 @@ public class Render extends JFrame {
 						y = c.getY();
 						firstDragging = false;
 					}
-					System.out.println(x + ", " + y);
 					if (c.getWidth() < MAP_WIDTH) {
 						if (x < 0)
 							x = 0;
