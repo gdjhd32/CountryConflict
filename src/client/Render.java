@@ -44,6 +44,8 @@ public class Render extends JFrame {
 
 	private JLabel[] names;
 
+	private boolean canOpenInfoWindow;
+
 	private final LayoutManager EMPTY_LAYOUT_MANAGER = new LayoutManager() {
 
 		@Override
@@ -80,6 +82,7 @@ public class Render extends JFrame {
 		super("Country Conflict");
 		setLocation(FRAME_X, FRAME_Y);
 		addingComponents();
+		canOpenInfoWindow = true;
 	}
 
 //	public void renderImage(String name, int x, int y, int z, int width, int height, int rotation,
@@ -152,13 +155,28 @@ public class Render extends JFrame {
 			names[i].setForeground(new Color(0, 255, 0));
 			iP.add(names[i]);
 
-			ipuws[i] = new InformationPopUpWindow(areas[i]);
+			ipuws[i] = new InformationPopUpWindow(areas[i], i);
 			names[i].addMouseListener(new AreaMouseListener(names[i], ipuws[i]));
 		}
 		for (int i = 0; i < ipuws.length; i++) {
-			iP.add(ipuws[i]);
+			mapPanel.add(ipuws[i]);
+		}
+		Component cTemp = mapPanel.getComponent(0);
+		for (int i = 1; i < mapPanel.getComponentCount(); i++) {
+			mapPanel.setComponentZOrder(mapPanel.getComponent(i), i - 1);
+		}
+		mapPanel.setComponentZOrder(cTemp, mapPanel.getComponentCount() - 1);
+		configuartionOfDragableComponentsOfMap();
+		mapPanel.repaint();
+	}
+	
+	private void configuartionOfDragableComponentsOfMap() {
+		for (int i = 0; i < mapPanel.getComponentCount(); i++) {
+			mapPanel.getComponent(i).addMouseListener(new DragableWindowMouseListener(mapPanel.getComponent(i)));
+			mapPanel.getComponent(i).addMouseMotionListener(new DragableWindowMouseControl(i, mapPanel));
 		}
 	}
+	
 
 	private void addingComponents() {
 
@@ -177,28 +195,6 @@ public class Render extends JFrame {
 		mapImagePane.setLayout(EMPTY_LAYOUT_MANAGER);
 
 		mapPanel = new JPanel();
-		mapPanel.addMouseListener(new MouseAdapter() {
-
-			@Override
-			public void mouseReleased(MouseEvent e) {
-				if (e.getButton() == MouseEvent.BUTTON1) {
-					((MouseDraggingControl) mapPanel.getMouseMotionListeners()[0]).resetMouseCoordinates();
-					((MouseDraggingControl) mapPanel.getMouseMotionListeners()[0]).setDragable(false);
-				}
-			}
-
-			@Override
-			public void mousePressed(MouseEvent e) {
-				if (e.getButton() == MouseEvent.BUTTON1) {
-					((MouseDraggingControl) mapPanel.getMouseMotionListeners()[0]).setMouseCoordinates(e.getX(),
-							e.getY());
-					((MouseDraggingControl) mapPanel.getMouseMotionListeners()[0]).setDragable(true);
-				}
-			}
-
-		});
-
-		mapPanel.addMouseMotionListener(new MouseDraggingControl(0, mapPanel));
 		mapPanel.setLayout(EMPTY_LAYOUT_MANAGER);
 		mapPanel.add(mapImagePane);
 
@@ -270,12 +266,13 @@ public class Render extends JFrame {
 		System.exit(0);
 	}
 
-	private class MouseEnteredListener implements MouseListener {
+	private class DragableWindowMouseListener implements MouseListener {
 
 		private boolean entered = false;
+		private Component c;
 
-		public MouseEnteredListener() {
-
+		public DragableWindowMouseListener(Component c) {
+			this.c = c;
 		}
 
 		@Override
@@ -285,33 +282,37 @@ public class Render extends JFrame {
 
 		@Override
 		public void mousePressed(MouseEvent e) {
-
+			if (e.getButton() == MouseEvent.BUTTON1) {
+				((DragableWindowMouseControl) c.getMouseMotionListeners()[0]).setMouseCoordinates(e.getX(),
+						e.getY());
+				((DragableWindowMouseControl) c.getMouseMotionListeners()[0]).setDragable(true);
+			}
 		}
 
 		@Override
 		public void mouseReleased(MouseEvent e) {
-
+			if (e.getButton() == MouseEvent.BUTTON1) {
+				((DragableWindowMouseControl) c.getMouseMotionListeners()[0]).resetMouseCoordinates();
+				((DragableWindowMouseControl) c.getMouseMotionListeners()[0]).setDragable(false);
+			}
 		}
 
 		@Override
 		public void mouseEntered(MouseEvent e) {
 			entered = true;
-			System.out.println("!");
 		}
 
 		@Override
 		public void mouseExited(MouseEvent e) {
 			entered = false;
-			System.out.println("?");
 		}
 
 		public boolean getEntered() {
 			return entered;
 		}
-
 	}
 
-	private class MouseDraggingControl implements MouseMotionListener {
+	private class DragableWindowMouseControl implements MouseMotionListener {
 
 		private int x = 0, y = 0;
 		private int mX = -1, mY = -1;
@@ -319,7 +320,7 @@ public class Render extends JFrame {
 		private int index = 0;
 		private JPanel parent;
 
-		public MouseDraggingControl(int indexOfComponent, JPanel parentJPanel) {
+		public DragableWindowMouseControl(int indexOfComponent, JPanel parentJPanel) {
 			index = indexOfComponent;
 			parent = parentJPanel;
 		}
@@ -327,25 +328,40 @@ public class Render extends JFrame {
 		@Override
 		public void mouseDragged(MouseEvent e) {
 			if (dragable) {
-				Component iP = null;
+				Component c = null;
 				try {
-					iP = parent.getComponent(index);
+					c = parent.getComponent(index);
 				} catch (Exception ex) {
-					System.err.println("Object mapPanel does not have the right object at " + index + ".");
+					System.err.println("Object mapPanel does not have an object at " + index + ".");
 				}
 				if (mX != -1 && mY != -1) {
 					x += e.getX() - mX;
 					y += e.getY() - mY;
-					if (x > 0)
-						x = 0;
-					if (x < MAP_WIDTH - iP.getWidth())
-						x = MAP_WIDTH - iP.getWidth();
-					if (y > 0)
-						y = 0;
-					if (y < MAP_HEIGHT - iP.getHeight())
-						y = MAP_HEIGHT - iP.getHeight();
+					if (c.getWidth() < MAP_WIDTH) {
+						if (x < 0)
+							x = 0;
+						if (x > MAP_WIDTH - c.getWidth())
+							x = MAP_WIDTH - c.getWidth();
+					} else {
+						if (x > 0)
+							x = 0;
+						if (x < MAP_WIDTH - c.getWidth())
+							x = MAP_WIDTH - c.getWidth();
+					}
+					if (c.getWidth() < MAP_WIDTH) {
+						if (y < 0)
+							y = 0;
+						if (y > MAP_HEIGHT - c.getWidth())
+							y = MAP_HEIGHT - c.getWidth();
+					} else {
+						if (y > 0)
+							y = 0;
+						if (y < MAP_HEIGHT - c.getHeight())
+							y = MAP_HEIGHT - c.getHeight();
+					}
 				}
-				iP.setBounds(x, y, iP.getWidth(), iP.getHeight());
+				c.setBounds(x, y, c.getWidth(), c.getHeight());
+				parent.repaint();
 				mX = e.getX();
 				mY = e.getY();
 			}
@@ -365,6 +381,14 @@ public class Render extends JFrame {
 			this.dragable = dragable;
 		}
 
+		public void setIndex(int index) {
+			this.index = index;
+		}
+
+		public int getIndex() {
+			return index;
+		}
+
 		@Override
 		public void mouseMoved(MouseEvent e) {
 
@@ -375,15 +399,18 @@ public class Render extends JFrame {
 	private final class InformationPopUpWindow extends JPanel {
 
 		private final Area AREA;
-		private int x = 0, y = 0, width = 100, height = 100;
+		private int x, y, width = 100, height = 100;
 
-		public InformationPopUpWindow(Area area) {
+		public InformationPopUpWindow(Area area, int index) {
 			super();
+			AREA = area;
+			x = (MAP_WIDTH - width) / 2;
+			y = (MAP_HEIGHT - height) / 2;
 			setBounds(x, y, width, height);
-			setBorder(BorderFactory.createTitledBorder("Test"));
+			setBorder(BorderFactory.createTitledBorder(AREA.NAME));
 			setVisible(false);
 			setEnabled(false);
-			AREA = area;
+			addMouseListener(new DragableWindowMouseListener(this));
 		}
 
 		public void open() {
@@ -410,7 +437,13 @@ public class Render extends JFrame {
 
 		@Override
 		public void mouseClicked(MouseEvent e) {
-			IPUW.open();
+			if (canOpenInfoWindow) {
+				IPUW.open();
+				canOpenInfoWindow = false;
+			} else if (IPUW.isVisible()) {
+				canOpenInfoWindow = true;
+				IPUW.close();
+			}
 		}
 
 		@Override
@@ -426,11 +459,13 @@ public class Render extends JFrame {
 		@Override
 		public void mouseEntered(MouseEvent e) {
 			AREA.setForeground(new Color(255, 100, 0));
+			mapPanel.repaint();
 		}
 
 		@Override
 		public void mouseExited(MouseEvent e) {
 			AREA.setForeground(new Color(0, 255, 0));
+			mapPanel.repaint();
 		}
 
 	}
