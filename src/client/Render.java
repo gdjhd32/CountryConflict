@@ -388,14 +388,15 @@ public class Render extends JFrame {
 	private final class InformationPopUpWindow extends JPanel {
 
 		private final Area AREA;
-		private int x, y, width = 100, height = 100;
+		private final int X, Y;
+		private int width = 100, height = 100;
 
 		public InformationPopUpWindow(Area area, int index) {
 			super();
 			AREA = area;
-			x = (MAP_WIDTH - width) / 2;
-			y = (MAP_HEIGHT - height) / 2;
-			setBounds(x, y, width, height);
+			X = (MAP_WIDTH - width) / 2;
+			Y = (MAP_HEIGHT - height) / 2;
+			setBounds(X, Y, width, height);
 			setBorder(BorderFactory.createTitledBorder(AREA.NAME));
 			setVisible(false);
 			setEnabled(false);
@@ -409,6 +410,7 @@ public class Render extends JFrame {
 		public void close() {
 			setVisible(false);
 			setEnabled(false);
+			setBounds(X, Y, width, height);
 		}
 
 	}
