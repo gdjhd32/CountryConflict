@@ -5,23 +5,23 @@ import classBase.List;
 public class Area {
 
 	enum BuildingSlotStatus {
-		empty, factory
+		EMPTY, FACTORY
 	}
 	
-	public final String name;
-	public final int labelX, labelY, additionalLabelWidth;
+	public final String NAME;
+	public final int LABEL_X, LABEL_Y, ADDITIONAL_LABEL_WIDTH;
 	private List<BuildingSlot> buildingSlots;
 
 	public Area(String name, int labelX, int labelY, int additionalLabelWidth) {
-		this.name = name;
-		this.labelX = labelX;
-		this.labelY = labelY;
-		this.additionalLabelWidth = additionalLabelWidth;
+		NAME = name;
+		LABEL_X = labelX;
+		LABEL_Y = labelY;
+		ADDITIONAL_LABEL_WIDTH = additionalLabelWidth;
 		buildingSlots = new List<>();
 	}
 	
 	public void addBuildingSlot(int index, int x, int y) {
-		buildingSlots.append(new BuildingSlot(BuildingSlotStatus.empty, index, x, y));
+		buildingSlots.append(new BuildingSlot(BuildingSlotStatus.EMPTY, index, x, y));
 	}
 	
 	public BuildingSlot getBuildingSlot(int index) {

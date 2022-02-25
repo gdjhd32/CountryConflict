@@ -73,7 +73,7 @@ public class Render extends JFrame {
 	};
 
 	public enum WindowComponent {
-		Map, Info, Shortcut
+		MAP, INFO, SHORTCUT
 	};
 
 	public Render() {
@@ -139,15 +139,15 @@ public class Render extends JFrame {
 			System.err.println("Object mapPanel does not have a ImagePane object at index 0!");
 			return;
 		}
-		//iP.addImage(map.mapImageName, 0, 0, Integer.MIN_VALUE, map.mapImageWidth, map.mapImageHeigth, 0);
+		iP.addImage(map.mapImageName, 0, 0, Integer.MIN_VALUE, map.mapImageWidth, map.mapImageHeigth, 0);
 		areas = map.getAreas();
 		names = new JLabel[areas.length];
 		InformationPopUpWindow[] ipuws = new InformationPopUpWindow[areas.length];
 		for (int i = 0; i < names.length; i++) {
-			names[i] = new JLabel(areas[i].name);
-			Rectangle2D r = iP.getGraphics().getFont().getStringBounds(areas[i].name,
+			names[i] = new JLabel(areas[i].NAME);
+			Rectangle2D r = iP.getGraphics().getFont().getStringBounds(areas[i].NAME,
 					((Graphics2D) iP.getGraphics()).getFontRenderContext());
-			names[i].setBounds(areas[i].labelX, areas[i].labelY, (int) r.getWidth() + areas[i].additionalLabelWidth,
+			names[i].setBounds(areas[i].LABEL_X, areas[i].LABEL_Y, (int) r.getWidth() + areas[i].ADDITIONAL_LABEL_WIDTH,
 					14);
 			names[i].setForeground(new Color(0, 255, 0));
 			iP.add(names[i]);
@@ -455,14 +455,14 @@ public class Render extends JFrame {
 			}
 			images.toFirst();
 			while (images.hasAccess() && !imageIsInList) {
-				if (name.equals(images.getContent().name)) {
+				if (name.equals(images.getContent().NAME)) {
 					images.getContent().increaseCounter();
 					imageIsInList = true;
 				}
 				images.next();
 			}
 			if (!imageIsInList) {
-				images.append(new ImageStorage(img, name));
+				images.append(new ImageStorage(name));
 				ImageParameterList list = new ImageParameterList(name);
 				Parameter param = new Parameter(img, x, y, z, width, height, rotation);
 				list.append(param);
@@ -473,15 +473,15 @@ public class Render extends JFrame {
 
 			imageParameter.toFirst();
 			while (imageParameter.hasAccess()) {
-				if (imageParameter.getContent().name.equals(name)) {
+				if (imageParameter.getContent().NAME.equals(name)) {
 					ImageParameterList list = imageParameter.getContent();
 					Parameter parameter = new Parameter(img, x, y, z, width, height, rotation);
 					list.toFirst();
 					imageParameterIsInList = false;
 					while (list.hasAccess() && !imageParameterIsInList) {
-						if (list.getContent().x == x && list.getContent().y == y && list.getContent().z == z
-								&& list.getContent().width == width && list.getContent().height == height
-								&& list.getContent().rotation == rotation) {
+						if (list.getContent().X == x && list.getContent().Y == y && list.getContent().Z == z
+								&& list.getContent().WIDTH == width && list.getContent().HEIGHT == height
+								&& list.getContent().ROTATION == rotation) {
 							imageParameterIsInList = true;
 							break;
 						}
@@ -501,13 +501,13 @@ public class Render extends JFrame {
 			boolean imageIsInList = false;
 			images.toFirst();
 			while (images.hasAccess() && !imageIsInList) {
-				if (name.equals(images.getContent().name)) {
+				if (name.equals(images.getContent().NAME)) {
 					images.getContent().decreaseCounter();
 					if (images.getContent().getCounter() < 1) {
 						images.remove();
 						imageParameter.toFirst();
 						while (imageParameter.hasAccess()) {
-							if (imageParameter.getContent().name.equals(name)) {
+							if (imageParameter.getContent().NAME.equals(name)) {
 								imageParameter.remove();
 								break;
 							}
@@ -524,13 +524,13 @@ public class Render extends JFrame {
 
 			imageParameter.toFirst();
 			while (imageParameter.hasAccess()) {
-				if (imageParameter.getContent().name.equals(name)) {
+				if (imageParameter.getContent().NAME.equals(name)) {
 					ImageParameterList list = imageParameter.getContent();
 					list.toFirst();
 					while (list.hasAccess()) {
-						if (list.getContent().x == x && list.getContent().y == y && list.getContent().z == z
-								&& list.getContent().width == width && list.getContent().height == height
-								&& list.getContent().rotation == rotation) {
+						if (list.getContent().X == x && list.getContent().Y == y && list.getContent().Z == z
+								&& list.getContent().WIDTH == width && list.getContent().HEIGHT == height
+								&& list.getContent().ROTATION == rotation) {
 							list.remove();
 							return;
 						}
@@ -560,7 +560,7 @@ public class Render extends JFrame {
 					} else {
 						inserted = false;
 						while (sortedParameter.hasAccess() && !inserted) {
-							if (sortedParameter.getContent().z > imageParameter.getContent().getContent().z) {
+							if (sortedParameter.getContent().Z > imageParameter.getContent().getContent().Z) {
 								inserted = true;
 								sortedParameter.insert(imageParameter.getContent().getContent());
 								break;
@@ -585,11 +585,11 @@ public class Render extends JFrame {
 			sortedParameter.toFirst();
 			while (sortedParameter.hasAccess()) {
 				Parameter parameter = sortedParameter.getContent();
-				if (parameter.img != null) {
+				if (parameter.IMG != null) {
 					old = g2d.getTransform();
-					g2d.rotate(Math.toRadians(parameter.rotation), parameter.x + (parameter.width / 2),
-							parameter.y + (parameter.height / 2));
-					g2d.drawImage(parameter.img, parameter.x, parameter.y, parameter.width, parameter.height, this);
+					g2d.rotate(Math.toRadians(parameter.ROTATION), parameter.X + (parameter.WIDTH / 2),
+							parameter.Y + (parameter.HEIGHT / 2));
+					g2d.drawImage(parameter.IMG, parameter.X, parameter.Y, parameter.WIDTH, parameter.HEIGHT, this);
 					g2d.setTransform(old);
 				}
 				sortedParameter.next();
@@ -599,14 +599,11 @@ public class Render extends JFrame {
 
 		private class ImageStorage {
 
-			@SuppressWarnings("unused")
-			public final BufferedImage img;
 			private int referenceCounter = 1;
-			public final String name;
+			public final String NAME;
 
-			public ImageStorage(BufferedImage img, String name) {
-				this.img = img;
-				this.name = name;
+			public ImageStorage(String name) {
+				NAME = name;
 			}
 
 			public void increaseCounter() {
@@ -625,28 +622,28 @@ public class Render extends JFrame {
 
 		private class ImageParameterList extends List<Parameter> {
 
-			public final String name;
+			public final String NAME;
 
 			public ImageParameterList(String name) {
 				super();
-				this.name = name;
+				NAME = name;
 			}
 
 		}
 
 		private class Parameter {
 
-			public final int x, y, z, width, height, rotation;
-			public final BufferedImage img;
+			public final int X, Y, Z, WIDTH, HEIGHT, ROTATION;
+			public final BufferedImage IMG;
 
 			public Parameter(BufferedImage img, int x, int y, int z, int width, int height, int rotation) {
-				this.img = img;
-				this.x = x;
-				this.y = y;
-				this.z = z;
-				this.width = width;
-				this.height = height;
-				this.rotation = rotation;
+				IMG = img;
+				X = x;
+				Y = y;
+				Z = z;
+				WIDTH = width;
+				HEIGHT = height;
+				ROTATION = rotation;
 			}
 
 		}
