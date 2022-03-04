@@ -1,6 +1,6 @@
 {
     "mapImage" : [
-        "tmp", 2000, 1000
+        "tmp", 1920, 1080
     ],
     "areas" : [
         {"areaName" : "Hell", "labelX" : 0, "labelY" : 0, "additionalLabelWidth" : 0, "buildingSlots" : [
