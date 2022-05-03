@@ -522,6 +522,7 @@ public class Render extends JFrame {
 			repaint();
 		}
 
+		@SuppressWarnings("unused")
 		public void deleteImage(String name, int x, int y, int z, int width, int height, int rotation) {
 			boolean imageIsInList = false;
 			images.toFirst();
